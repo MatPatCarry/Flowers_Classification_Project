@@ -1,1 +1,1 @@
-# Flowers_Classification_Project
+# Flowers Classification Project
