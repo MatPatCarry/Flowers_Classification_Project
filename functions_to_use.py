@@ -37,11 +37,6 @@ sns.set_style('darkgrid')
 
 def checking_extensions(data_path):
 
-    '''
-        Function which checks 
-    '''
-
-
     image_extensions = [".png", ".jpg", ".jpeg"]
     files_with_wrong_extension = []
 
