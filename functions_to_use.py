@@ -30,12 +30,18 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, CSVLogger
 
 import warnings
+
 warnings.filterwarnings('ignore')
 
 sns.set_style('darkgrid')
 
 
 def checking_extensions(data_path):
+    """
+        Checks the extensions of the files.
+        data_path: path to the right directory with data
+        return: list of files with wrong extension
+    """
 
     image_extensions = [".png", ".jpg", ".jpeg"]
     files_with_wrong_extension = []
@@ -49,7 +55,13 @@ def checking_extensions(data_path):
 
     return files_with_wrong_extension
 
+
 def checking_if_images_are_valid(path_to_data_dir):
+    """
+        Checks if the types of images are valid - the type of the file must be accepted by TF.
+        path_to_data_dir: path to the right directory with data
+        return: list of files which are not valid to the model
+    """
 
     image_extensions = [".png", ".jpg", ".jpeg"]
     img_type_accepted_by_tf = ["bmp", "gif", "jpeg", "png"]
@@ -59,7 +71,7 @@ def checking_if_images_are_valid(path_to_data_dir):
 
         if filepath.suffix.lower() in image_extensions:
             img_type = imghdr.what(filepath)
-            
+
             if img_type is None:
                 print(f"{filepath} is not an image")
                 invalid_images += [filepath]
@@ -70,7 +82,13 @@ def checking_if_images_are_valid(path_to_data_dir):
 
     return invalid_images
 
+
 def displaying_random_images(batched_dataset, class_names):
+    """
+        Displays randomly selected images.
+        batched_dataset: selected, batched dataset from which images will be displayed
+        class_names: names of the flowers
+    """
 
     plt.figure(figsize=(20, 20))
 
@@ -84,36 +102,51 @@ def displaying_random_images(batched_dataset, class_names):
 
     plt.show()
 
+
 def data_augmentation_from_keras():
+    """
+        It creates several layers of preprocessing data.
+        return: data_augmentation
+    """
 
     data_augmentation = tf.keras.Sequential([
-    RandomFlip("horizontal"), 
-    RandomRotation(0.2),
-    RandomZoom(0.1),
-    RandomTranslation(0.1, 0.1)
+        RandomFlip("horizontal"),
+        RandomRotation(0.2),
+        RandomZoom(0.1),
+        RandomTranslation(0.1, 0.1)
     ])
 
     return data_augmentation
 
-def augmented_sample(train_dataset):
 
-    augmented_photos= []
+def augmented_sample(train_dataset):
+    """
+        Function which takes one photo from train dataset randomly,
+        applies augmentation on it and returns list of augmented images
+        train_dataset: batched train data set
+        return: list of images of augmented photo
+    """
+
+    augmented_photos = []
     data_augmentation = data_augmentation_from_keras()
 
     for images, _ in train_dataset.take(1):
         for i in range(9):
-
             augmented_images = data_augmentation(images)
             augmented_photos += [augmented_images[0]]
 
     return augmented_photos
 
+
 def displaying_augmented_image(augmented_images):
+    """
+        Displays augmented images of photo .
+        augmented_images: list of augmented images
+    """
 
     plt.figure(figsize=(15, 15))
 
     for i in range(9):
-
         ax = plt.subplot(3, 3, i + 1)
         plt.imshow(augmented_images[i].numpy().astype("uint8"))
         plt.axis("off")
@@ -122,10 +155,16 @@ def displaying_augmented_image(augmented_images):
     plt.tight_layout()
     plt.show()
 
+
 def creating_convolutional_neural_network(num_classes, image_size):
+    """
+        Creates Convolutional Neural Network.
+        num_classes: number of flower classes
+        image_size: size of the the images
+    """
 
     data_augmentation = data_augmentation_from_keras()
-        
+
     model = Sequential([
         Rescaling(1. / 255),
         data_augmentation,
@@ -144,7 +183,13 @@ def creating_convolutional_neural_network(num_classes, image_size):
 
     return model
 
-def plotting_learing_history(history):
+
+def plotting_learning_history(history):
+    """
+        Displays a plot of the network's learning history -
+        how the accuracy and value of the loss function were changing.
+        history: the model history record
+    """
 
     if isinstance(history, pd.DataFrame):
         accuracy = history['accuracy']
@@ -181,10 +226,24 @@ def plotting_learing_history(history):
     fig.tight_layout()
     plt.show()
 
+
 def max_probality(preds):
+    """
+        Function finds index of maximum value
+        return: index of maximum value
+    """
+
     return np.argmax(preds)
 
+
 def comparing_true_and_predicted(list_with_tensors, new_real_labels, new_preds, class_names):
+    """
+        Displays the comparison of the model's predictions with the real data.
+        list_with_tensors: TF tensor of images
+        new_real_labels: real labels of flowers
+        new_preds: predicted labels
+        class_names: list of flower classes names
+    """
 
     plt.figure(figsize=(25, 25))
 
@@ -193,10 +252,12 @@ def comparing_true_and_predicted(list_with_tensors, new_real_labels, new_preds, 
         index1, index2 = np.random.randint(0, 8), np.random.randint(0, 128)
 
         if index1 == 7 and index2 == 127:
-                index2 = 126
+            index2 = 126
 
         plt.imshow(list_with_tensors[index1][index2].astype("uint8"))
-        plt.title(f'Real label: {class_names[new_real_labels[index1][index2]]}\nPredicted: {class_names[new_preds[index1][index2]]}', fontsize=25)
+        plt.title(
+            f'Real label: {class_names[new_real_labels[index1][index2]]}\nPredicted: {class_names[new_preds[index1][index2]]}',
+            fontsize=25)
         plt.axis("off")
 
     plt.tight_layout()
